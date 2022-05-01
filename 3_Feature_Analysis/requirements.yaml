@@ -1,0 +1,23 @@
+name: landscape
+channels:
+  - schrodinger
+  - salilab
+  - anaconda
+  - bioconda
+  - conda-forge
+dependencies:
+  - anarci
+  - biopython=1.79
+  - cd-hit=4.8.1
+  - dssp=2.2.1
+  - msms=2.6.1
+  - openbabel=3.1.1
+  - pymol=2.5.2
+  - python=3.8.12
+  - pip:
+    - matplotlib==3.2.2
+    - numpy==1.19.5
+    - pandas==0.25.3
+    - scipy==1.7.3
+    - seaborn==0.11.2
+  

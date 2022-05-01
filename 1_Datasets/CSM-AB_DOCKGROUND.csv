@@ -1,0 +1,16 @@
+PDB,antibody_chains,antigen_chains,Incorrect(DockQ-CAPRI Quality),Acceptable(DockQ-CAPRI Quality),Medium(DockQ-CAPRI Quality),High(DockQ-CAPRI Quality)
+1g6v,A,B,99,1,0,0
+1wej,B C,A,99,1,0,0
+2dd8,A B,C,99,1,0,0
+3hi6,C B,A,99,1,0,0
+3p11,C B,A,99,1,0,0
+3s36,A B,C,99,0,1,0
+4dn4,A B,C,99,1,0,0
+4etq,B C,A,99,0,1,0
+4h8w,C B,A,99,1,0,0
+4m3k,B,A,99,1,0,0
+4m7l,A B,C,99,1,0,0
+4r4f,C D,A B,99,1,0,0
+4r9y,C D,A B,99,1,0,0
+5bvp,A B,C,99,1,0,0
+5e8d,C B,A,99,1,0,0

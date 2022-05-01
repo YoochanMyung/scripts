@@ -1,0 +1,14 @@
+PDB,antibody_chains,antigen_chains,Incorrect(DockQ-CAPRI Quality of Top 1000 poses),Acceptable(DockQ-CAPRI Quality of Top 1000 poses),Medium(DockQ-CAPRI Quality of Top 1000 poses),High(DockQ-CAPRI Quality of Top 1000 poses),Incorrect(Selected poses from each class),Acceptable(Selected poses from each class),Medium(Selected poses from each class),High(Selected poses from each class)
+1AHW,LH,A,699,234,65,2,50,50,50,2
+1BJ1,LH,G,567,231,188,14,50,50,50,14
+1DQJ,CD,A,549,425,26,0,50,50,25,0
+1FSK,BC,A,95,669,221,15,50,50,50,15
+IQD 1,AB,M,331,573,89,7,50,50,50,7
+1JPS,LH,B,736,205,55,4,50,50,50,4
+1KXQ,A,H,766,176,51,7,50,50,50,7
+1MLC,AB,E,382,445,166,7,50,50,50,7
+1NCA,LH,N,566,84,50,7,50,50,50,7
+1NSN,LH,S,788,189,22,1,50,50,22,1
+2FD6,LH,A,476,433,91,0,50,50,50,0
+2I25,N,A,176,763,61,0,50,50,50,0
+2JEL,LH,P,35,694,266,5,35,50,50,5
