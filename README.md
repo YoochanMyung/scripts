@@ -1,4 +1,4 @@
-The following resources used for my Ph.D thesis are accessible.
+The following resources were used for my Ph.D thesis.
 
 # Datasets
 - Training and blind-test data for mCSM-AB2, mmCSm-AB and CSM-AB projects.
