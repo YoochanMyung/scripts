@@ -14,7 +14,6 @@ import os
 import warnings
 import pandas as pd
 import numpy as np
-pdb_dir = './SabDab/'
 
 class SelectFilter(Select):
     def __init__(self, chain_letters):
@@ -68,16 +67,21 @@ def parallelize_dataframe(df, func, num_cores):
     pool.join()
 
 if __name__ == '__main__':
+    global pdb_dir
     parser = argparse.ArgumentParser(description="This is a script for cleaning PDB files.")
     parser.add_argument('input_tsv',type=str,\
         help='input_cluster pandas tsv')
-    parser.add_argument('core',type=str,\
+    parser.add_argument('pdb_dir',type=str,\
+        help='location of PDBs')        
+    parser.add_argument('cores',type=str,\
         default=4,
         help='Choose the number of cores for parallelization')
 
     args = parser.parse_args()
     input_tsv = args.input_tsv
-    num_of_cores = args.core
+    pdb_dir = args.pdb_dir
+    cores = args.cores
+    
     input_pd = pd.read_csv(input_tsv,sep='\t')
-    parallelize_dataframe(input_pd,cleanPDB,num_of_cores)
+    parallelize_dataframe(input_pd,cleanPDB,cores)
 

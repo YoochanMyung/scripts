@@ -13,7 +13,6 @@ import sys
 import argparse
 import pandas as pd
 import numpy as np
-pdb_dir = './SabDab/'
 
 def getInterfaceResidue(input_pd):
     for ind,row in input_pd.iterrows():
@@ -55,7 +54,6 @@ def getInterfaceResidue(input_pd):
             f.write(",".join(epitope_list))
             f.close()
 
-
 def parallelize_dataframe(df, func, num_cores):
     df_split = np.array_split(df, num_cores)
     pool = Pool(num_cores)
@@ -64,18 +62,21 @@ def parallelize_dataframe(df, func, num_cores):
     pool.join()
 
 if __name__ == '__main__':
+    global pdb_dir
     parser = argparse.ArgumentParser(description="This is a script for getting interface residues using Pymol")
     parser.add_argument('input_tsv',type=str,\
         help='input_cluster pandas tsv')
-    parser.add_argument('core',type=str,\
+    parser.add_argument('pdb_dir',type=str,\
+        help='location of PDBs')                
+    parser.add_argument('cores',type=str,\
         default=4,
         help='Choose the number of cores for parallelization')
 
     args = parser.parse_args()
     input_tsv = args.input_tsv
-    num_of_cores = args.core
+    cores = args.cores
     input_pd = pd.read_csv(input_tsv,sep='\t')
-    parallelize_dataframe(input_pd,getInterfaceResidue,num_of_cores)
+    parallelize_dataframe(input_pd,getInterfaceResidue,cores)
 
     # python getIntRes.py test.tsv 8
 

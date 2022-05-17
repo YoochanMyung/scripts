@@ -40,7 +40,6 @@ def specific_CDR(arpeggio_result_pd):
     
     return result_pd
 
-
 def normalise_interface(arpeggio_result_pd, bsa_result_pd):
     result_pd = pd.DataFrame()
     merged_pd = arpeggio_result_pd.join(bsa_result_pd)
@@ -48,7 +47,6 @@ def normalise_interface(arpeggio_result_pd, bsa_result_pd):
         for col in row.keys():
             if not isinstance(row[col],str) and col != 'BSA':
                 result_pd.loc[ind,col] = row[col]/row['BSA']*100
-
         result_pd.loc[ind,'BSA'] = row['BSA']
         result_pd.loc[ind,'type'] = row['type']
     result_pd.drop(['sasaTotal','sasaAb','sasaAg'],axis=1,inplace=True)

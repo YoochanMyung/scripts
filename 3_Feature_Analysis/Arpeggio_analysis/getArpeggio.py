@@ -17,7 +17,6 @@ import pandas as pd
 import os
 import sys
 import argparse
-pdb_dir = './SabDab/'
 
 def run_Arpeggio_interface(input_pd):
     for ind,row in input_pd.iterrows():
@@ -37,7 +36,7 @@ def run_Arpeggio_interface(input_pd):
 
         print("Working on...{}".format(pdb_file))
         try:
-            os.system('python {}src/Arpeggio/arpeggio.py {} -s {} -op _interface'.format(pdb_dir,pdb_file,interface_list))
+            os.system('python {} {} -s {} -op _interface'.format(os.path.join(arpeggio_dir, 'arpeggio.py'),pdb_file,interface_list))
         except Exception as e:
             print('Got an Error from {}'.format(pdb_file))
             print(e)
@@ -56,7 +55,7 @@ def run_Arpeggio_CDR(input_pd):
 
         print("Working on...{}".format(pdb_file))
         try:
-            os.system('python {}src/Arpeggio/arpeggio.py {} -s {} -op _CDR'.format(pdb_dir,pdb_file,residue_list))
+            os.system('python {} {} -s {} -op _CDR'.format(os.path.join(arpeggio_dir, 'arpeggio.py'),pdb_file,residue_list))
         except Exception as e:
             print('Got an Error from {}'.format(pdb_file))
             print(e)
@@ -66,7 +65,7 @@ def run_Arpeggio_whole(input_pd):
         pdb_file = os.path.join(pdb_dir,row['ID']+'.pdb')
         print("Working on...{}".format(pdb_file))        
         try:
-            os.system('python {}src/Arpeggio/arpeggio.py {} -op _whole'.format(pdb_dir, pdb_file))
+            os.system('python {} {} -op _whole'.format(os.path.join(arpeggio_dir, 'arpeggio.py'), pdb_file))
         except Exception as e:
             print('Got an Error from {}'.format(pdb_file))
             print(e)
@@ -80,26 +79,40 @@ def parallelize_dataframe(df, func, num_cores):
     return df
 
 if __name__ == "__main__":
+    global pdb_dir
+    global arpeggio_dir
+
     parser = argparse.ArgumentParser(description="This is a script for running Arpeggio in parallel.\
      To run in interface mode, you have to have paratope and interface information in text file \
      which can be obtained by getIntRes.py.")
+
     parser.add_argument('input_tsv',type=str,\
         help='input_cluster pandas tsv')
+    parser.add_argument('pdb_dir',type=str,\
+        help='location of PDBs')
+    parser.add_argument('arpeggio_dir',type=str,\
+        help='location of Arpeggio')
     parser.add_argument('type_of_run',type=str,\
         choices=['whole','interface','CDR'],
         default='whole',
         help='choose between interface or whole')
-
+    parser.add_argument('cores',type=int,\
+        default=4,
+        help='Set the number of cores for parallel run')
     args = parser.parse_args()
 
     input_tsv = args.input_tsv
     type_of_run = args.type_of_run
+    pdb_dir = args.pdb_dir
+    cores = args.cores
+    arpeggio_dir = args.arpeggio_dir
+
     input_pd = pd.read_csv(input_tsv,sep='\t')
 
     if type_of_run == 'interface':
-        parallelize_dataframe(input_pd,run_Arpeggio_interface,4)
+        parallelize_dataframe(input_pd,run_Arpeggio_interface,cores)
     elif type_of_run == 'CDR':
-        parallelize_dataframe(input_pd,run_Arpeggio_CDR,4)
+        parallelize_dataframe(input_pd,run_Arpeggio_CDR,cores)
     else:
-        parallelize_dataframe(input_pd,run_Arpeggio_whole,4)
+        parallelize_dataframe(input_pd,run_Arpeggio_whole,cores)
 

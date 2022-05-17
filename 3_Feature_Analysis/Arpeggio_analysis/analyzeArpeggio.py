@@ -24,7 +24,6 @@ try:
     from StringIO import StringIO ## for Python 2
 except ImportError:
     from io import StringIO ## for Python 3
-pdb_dir = './SabDab/'
 
 def RabinKarp_search(pattern, text):
     d = len(text)
@@ -54,7 +53,6 @@ def RabinKarp_search(pattern, text):
 
             j += 1
             if j == m:
-                # print("Pattern is found at position: " + str(i+1))
                 return int(i)
 
         if i < n-m:
@@ -63,10 +61,10 @@ def RabinKarp_search(pattern, text):
             if t < 0:
                 t = t+q
 
-def runDirectly(fasta, scheme):
-    # only for chothia
+def runDirectly(fasta, scheme, chain):
+    _dict = {'H':'heavy','L':'light'}
     try:
-        anarci_run = Popen(["ANARCI", "--sequence", fasta, "--scheme", scheme], stdout=PIPE, stderr=PIPE)
+        anarci_run = Popen(["ANARCI", "--sequence", fasta, "--scheme", scheme, '-r',_dict[chain]], stdout=PIPE, stderr=PIPE)
         stdout, stderr = anarci_run.communicate();  # print(len(stdout.decode('ascii')))
         return stdout.decode('ascii')
     except:
@@ -205,9 +203,8 @@ def numberIMGTCDR(IMGT_number):
 def getCDRnumbForHighlight_IMGT(fasta,fastanPDBMap,chainID,pdbID,chainType):
     CDR_dictionary = dict()
     
-    annotated_seq = runDirectly(fasta, 'imgt')
+    annotated_seq = runDirectly(fasta, 'imgt', chainType)
     buf = StringIO(annotated_seq)
-
     temp_pd = pd.DataFrame()
     actual_fasta = fasta
     fasta = readFasta(fasta)
@@ -229,43 +226,38 @@ def getCDRnumbForHighlight_IMGT(fasta,fastanPDBMap,chainID,pdbID,chainType):
 
             if each.startswith('# Domain 2') and not temp_pd.query('chainType == @chainType').empty:
                 print("{}_{} has more than single {} chain domains.".format(pdbID,chainID,chainType))
-                # break
-                pass
+                break
 
-        temp_pd = temp_pd.query('chainType == @chainType').reset_index(drop=True)
-        temp_pd.index += 1
-        _fasta = ''.join(temp_pd['{}_{}'.format(pdbID,chainID)].to_list())
-        offset = RabinKarp_search(_fasta[0:10],actual_fasta)
-        temp_pd.index += offset
+    temp_pd.index += 1
+    _fasta = ''.join(temp_pd['{}_{}'.format(pdbID,chainID)].to_list())
+    offset = RabinKarp_search(_fasta[0:10],actual_fasta)
+    temp_pd.index += offset
 
-        result = pd.merge(temp_pd, fasta, left_index=True, right_index=True, how='outer')
-        result['CDR-{}'.format(chainType)] = result.apply(lambda row: numberIMGTCDR(row['IMGT']), axis=1)
-        result['imgt_numbering'] = result.apply(lambda row: addChainLetter('{}'.format(chainType), row['IMGT']), axis=1)
+    result = pd.merge(temp_pd, fasta, left_index=True, right_index=True, how='outer')
+    result['CDR-{}'.format(chainType)] = result.apply(lambda row: numberIMGTCDR(row['IMGT']), axis=1)
+    result['imgt_numbering'] = result.apply(lambda row: addChainLetter('{}'.format(chainType), row['IMGT']), axis=1)
 
-        CDR_1 = list()
-        CDR_2 = list()
-        CDR_3 = list()
-        for index, row in result.iterrows():
-            if row['CDR-{}'.format(chainType)].startswith('CDR'):
-                pdb_numb = fastanPDBMap.query('fasta_numb == {}'.format(row['fasta_numbering']))['pdb_numb'].values[0]
-                imgt_number = row['imgt_numbering']
-                amino_acid = three_2_one(row['fasta'])
+    CDR_1 = list()
+    CDR_2 = list()
+    CDR_3 = list()
+    for index, row in result.iterrows():
+        if row['CDR-{}'.format(chainType)].startswith('CDR'):
+            pdb_numb = fastanPDBMap.query('fasta_numb == {}'.format(row['fasta_numbering']))['pdb_numb'].values[0]
+            imgt_number = row['imgt_numbering']
+            amino_acid = three_2_one(row['fasta'])
 
-            if row['CDR-{}'.format(chainType)].startswith('CDR-1'):
-                # CDR_1.append('{}_{}'.format(chainID,pdb_numb))
-                CDR_1.append('{}_{}/{}_{}'.format(chainID,pdb_numb,imgt_number,amino_acid))
-            elif row['CDR-{}'.format(chainType)].startswith('CDR-2'):
-                # CDR_2.append('{}_{}'.format(chainID,pdb_numb))
-                CDR_2.append('{}_{}/{}_{}'.format(chainID,pdb_numb,imgt_number,amino_acid))
-            elif row['CDR-{}'.format(chainType)].startswith('CDR-3'):
-                # CDR_3.append('{}_{}'.format(chainID,pdb_numb))
-                CDR_3.append('{}_{}/{}_{}'.format(chainID,pdb_numb,imgt_number,amino_acid))
+        if row['CDR-{}'.format(chainType)].startswith('CDR-1'):
+            CDR_1.append('{}_{}/{}_{}'.format(chainID,pdb_numb,imgt_number,amino_acid))
+        elif row['CDR-{}'.format(chainType)].startswith('CDR-2'):
+            CDR_2.append('{}_{}/{}_{}'.format(chainID,pdb_numb,imgt_number,amino_acid))
+        elif row['CDR-{}'.format(chainType)].startswith('CDR-3'):
+            CDR_3.append('{}_{}/{}_{}'.format(chainID,pdb_numb,imgt_number,amino_acid))
 
-        CDR_dictionary['CDR-{}1'.format(chainType)] = CDR_1
-        CDR_dictionary['CDR-{}2'.format(chainType)] = CDR_2
-        CDR_dictionary['CDR-{}3'.format(chainType)] = CDR_3
+    CDR_dictionary['CDR-{}1'.format(chainType)] = CDR_1
+    CDR_dictionary['CDR-{}2'.format(chainType)] = CDR_2
+    CDR_dictionary['CDR-{}3'.format(chainType)] = CDR_3
 
-        return CDR_dictionary
+    return CDR_dictionary
 
 def changeForm(row, column_name):
     resname = row[column_name].split('/')[1]
@@ -502,7 +494,6 @@ def getInteractions_SelectedRes(pdb_file, antibody_chain_string, antigen_chain_s
                                     'WeakHbond', 'Halogen', 'Ionic', 'Metal', 'Aromatic', 'Hydrophobic', 'Carbonyl',
                                     'Polar', 'WeakPolar', 'int_type']
             contacts_pd['given_residue'] = contacts_pd.apply(lambda row: checkInterface_residue(row,'Atom1','Atom2',residue_list), axis=1)
-            # contacts_pd[contacts_pd['given_residue']].drop('given_residue',axis=1).to_csv(new_contacts_file,sep='\t',header=None,index=False)
             contacts_pd['Atom1'] = contacts_pd.apply(lambda row: changeForm(row, 'Atom1'), axis=1)
             contacts_pd['Atom2'] = contacts_pd.apply(lambda row: changeForm(row, 'Atom2'), axis=1)
             contacts_pd['test_query'] = contacts_pd.apply(
@@ -599,10 +590,6 @@ def getInteractions_SelectedRes(pdb_file, antibody_chain_string, antigen_chain_s
                 # for showing interacting residues
                 all_interacting_residues.extend(list(set(ari_pd['target_residue'].tolist())))
                 all_interacting_residues.extend(list(set(ari_pd['pseudo_residue'].tolist())))
-                # print(all_interacting_residues)
-
-                # for drawing pseudo_coord
-                # all_pseudo_coords.extend(list(set(ari_pd['pseudo_coord'].tolist())))
 
         # ring_ring(ri_file)
         if os.path.getsize(ri_file) > 0:
@@ -650,11 +637,6 @@ def getInteractions_SelectedRes(pdb_file, antibody_chain_string, antigen_chain_s
                     # for showing interacting residues
                     all_interacting_residues.extend(list(set(ri_pd['pseudo_residue1'].tolist())))
                     all_interacting_residues.extend(list(set(ri_pd['pseudo_residue2'].tolist())))
-
-                    # for drawing pseudo_coord
-                    # all_pseudo_coords.extend(list(set(ri_pd['pseudo_coord1'].tolist())))
-                    # all_pseudo_coords.extend(list(set(ri_pd['pseudo_coord2'].tolist())))
-
                 except ValueError:
                     pass
 
@@ -671,9 +653,6 @@ def getInteractions_SelectedRes(pdb_file, antibody_chain_string, antigen_chain_s
                                 'pseudo_type']
             amam_pd['given_residue'] = amam_pd.apply(
                 lambda row: checkInterface_residue(row, 'pseudo_residue1', 'pseudo_residue2', residue_list), axis=1)
-            # amam_pd[amam_pd['given_residue']].drop('given_residue', axis=1).to_csv(new_amam_file,
-            #                                                                              sep='\t', header=None,
-            #                                                                              index=False)
             amam_pd = amam_pd.drop(['target_type', 'pseudo_type'], axis=1)
             amam_pd['pseudo_residue1'] = amam_pd.apply(lambda row: changeForm(row, 'pseudo_residue1')[:-1], axis=1)
             amam_pd['pseudo_residue2'] = amam_pd.apply(lambda row: changeForm(row, 'pseudo_residue2')[:-1], axis=1)
@@ -711,10 +690,6 @@ def getInteractions_SelectedRes(pdb_file, antibody_chain_string, antigen_chain_s
                     # for showing interacting residues
                     all_interacting_residues.extend(list(set(amam_pd['pseudo_residue1'].tolist())))
                     all_interacting_residues.extend(list(set(amam_pd['pseudo_residue2'].tolist())))
-
-                    # for drawing pseudo_coord
-                    # all_pseudo_coords.extend(list(set(amam_pd['pseudo_coord1'].tolist())))
-                    # all_pseudo_coords.extend(list(set(amam_pd['pseudo_coord2'].tolist())))
 
                 except ValueError:
                     pass
@@ -764,10 +739,6 @@ def getInteractions_SelectedRes(pdb_file, antibody_chain_string, antigen_chain_s
                 # for showing interacting residues
                 all_interacting_residues.extend(list(set(amri_pd['pseudo_residue1'].tolist())))
                 all_interacting_residues.extend(list(set(amri_pd['pseudo_residue2'].tolist())))
-
-                # for drawing pseudo_coord
-                # all_pseudo_coords.extend(list(set(amri_pd['pseudo_coord1'].tolist())))
-                # all_pseudo_coords.extend(list(set(amri_pd['pseudo_coord2'].tolist())))
 
         all_interacting_residues = list(set(all_interacting_residues))
         all_pseudo_coords = list(set(all_pseudo_coords))
@@ -834,20 +805,26 @@ def do_CDR_analysis(input_pd,num_of_cores):
     result_Arpeggio_pd.to_csv(output_fname_Arpeggio, sep=';',index_label='ID')
 
 def main():
+    global pdb_dir
+
     parser = argparse.ArgumentParser(description="This is a script for analysing Arpeggio results.")
     parser.add_argument('input_tsv',type=str,\
         help='input_cluster pandas tsv')
-    parser.add_argument('core',type=str,\
+    parser.add_argument('pdb_dir',type=str,\
+        help='location of PDBs')
+    parser.add_argument('cores',type=int,\
         default=4,
-        help='Choose the number of cores for parallelization')
+        help='Set the number of cores for parallel run')
 
     args = parser.parse_args()
-    input_tsv = args.input_tsv
-    num_of_cores = args.core
-    input_pd = pd.read_csv(input_tsv,sep='\t')
 
-    do_int_analysis(input_pd,num_of_cores)
-    do_CDR_analysis(input_pd,num_of_cores)
+    input_tsv = args.input_tsv
+    cores = args.cores
+    pdb_dir = args.pdb_dir
+    input_pd = pd.read_csv(input_tsv,sep='\t')
+    
+    do_int_analysis(input_pd,cores)
+    do_CDR_analysis(input_pd,cores)
 
 if __name__ == "__main__":
     main()

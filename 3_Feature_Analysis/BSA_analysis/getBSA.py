@@ -18,8 +18,6 @@ import numpy as np
 import os
 import sys
 
-pdb_dir = './SabDab'
-
 def run_Freesasa(input_pd):
     result_pd = pd.DataFrame()
     for ind,row in input_pd.iterrows():
@@ -73,19 +71,24 @@ def parallelize_dataframe(df, func, num_cores):
 
 if __name__ == "__main__":
     print("Please check the 'pdb_dir' in the file!")
+    global pdb_dir
+    
     parser = argparse.ArgumentParser(description="This is a script for calculating Buried Surface Area using FreeSASA.")
     parser.add_argument('input_tsv',type=str,\
         help='input_cluster pandas tsv')
-    parser.add_argument('core',type=str,\
+    parser.add_argument('pdb_dir',type=str,\
+        help='location of PDBs')        
+    parser.add_argument('cores',type=str,\
         default=4,
         help='Choose the number of cores for parallelization')
 
     args = parser.parse_args()
     input_tsv = args.input_tsv
-    num_of_cores = args.core
+    cores = args.cores
+    pdb_dir = args.pdb_dir
 
     input_pd = pd.read_csv(input_tsv,sep='\t')
-    bsa_pd = parallelize_dataframe(input_pd,run_Freesasa,num_of_cores)
+    bsa_pd = parallelize_dataframe(input_pd,run_Freesasa,cores)
     bsa_pd = bsa_pd.round(2)
     bsa_pd.to_csv('result_BSA.csv',index_label='ID')
 
