@@ -6,7 +6,6 @@
 # *   ----------------------------------------------     *
 # ********************************************************
 import argparse
-from re import L
 import pandas as pd
 import sys
 
@@ -86,12 +85,7 @@ def main():
         print('{}_specific_CDR.csv was successfully created.'.format(args.arpeggio_csv))
 
 if __name__ == "__main__":
-    # print("##################################################################################")
-    # print("# There is a chance that the type of Ab information is not correct on BSA results.")
-    # print("# Therefore, the Ab type information of Arpeggio result will be used.")
-    # print("##################################################################################")
     main()
 
-
-# python ./src/GIT/normaliseArpeggio.py result_Arpeggio_interface.csv result_BSA.csv
-# python ./src/GIT/normaliseArpeggio.py result_Arpeggio_CDRs_ints.csv result_BSA.csv --analysis CDR
+# python normaliseArpeggio.py result_Arpeggio_interface.csv result_BSA.csv
+# python normaliseArpeggio.py result_Arpeggio_CDRs_ints.csv result_BSA.csv --analysis CDR
